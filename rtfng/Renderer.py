@@ -601,7 +601,9 @@ class Renderer:
 
             width = table_elem.LeftOffset or 0
             for idx, cell in enumerate(cells):
-                self._RendFramePropertySet  (cell.Frame, settings, 'cl')
+                # Quick hack to render a frame in all tables
+                #self._RendFramePropertySet  (cell.Frame, settings, 'cl')
+                settings.append(r'clbrdrt\brdrs\brdrw15 \clbrdrl\brdrs\brdrw15 \clbrdrb\brdrs\brdrw15 \clbrdrr\brdrs\brdrw15')
 
                 #  cells don't have margins so I don't know why I was doing this
                 #  I think it might have an affect in some versions of some WPs.
