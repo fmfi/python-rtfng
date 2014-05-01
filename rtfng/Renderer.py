@@ -484,7 +484,7 @@ class Renderer:
 
         for element in paragraph_elem:
             if isinstance(element, StringType):
-                self._write(element)
+                self.writeUnicodeElement(element)
             elif isinstance(element, UnicodeType):
                 self.writeUnicodeElement(element)
             elif isinstance(element, RawCode):
@@ -504,8 +504,21 @@ class Renderer:
         self._write(tag_suffix + closing)
 
     def writeUnicodeElement(self, element):
-        text = ''.join(['\u%s?' % str(ord(e)) for e in element])
-        self._write(text or '')
+        if isinstance(element, str):
+            element = element.decode('ascii')
+        r = ''
+        prevc = None
+        for c in element:
+            if (c == '\n' and prevc != '\r') or (c == '\r' and prevc != '\n'):
+                r += '\line '
+            elif (c == '\n' and prevc == '\r') or (c == '\r' and prevc == '\n'):
+                pass
+            elif c in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ':
+                r += c
+            else:
+                r += '\u{}?'.format(ord(c))
+            prevc = c
+        self._write(r)
 
     def WriteRawCode(self, raw_elem):
         self._write(raw_elem.Data)
@@ -521,7 +534,7 @@ class Renderer:
 
         #    if the data is just a string then we can now write it
         if isinstance(text_elem.Data, StringType):
-            self._write(text_elem.Data or '')
+            self.writeUnicodeElement(text_elem.Data or '')
 
         elif text_elem.Data == TAB:
             self._write(r'\tab ')
